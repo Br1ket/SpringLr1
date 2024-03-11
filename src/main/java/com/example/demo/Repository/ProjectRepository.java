@@ -13,30 +13,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @Repository
-public class ProjectRepository {
+public class ProjectRepository implements ProjectRepositoryI {
 
-   /* private JdbcTemplate template;
-    @Autowired
-	public ProjectRepository(JdbcTemplate template) {
-		this.template = template;
-	}
-	public Optional<Project> getById(Long id) {
-		List<Project> res = template.query(
-				"SELECT * FROM Project WHERE id = ?",
-				new RowMapper<Project>() {
-					@Override
-					public Project mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return new Project(
-								rs.getLong("id"),
-								rs.getString("name"),
-								rs.getString("desc")
-						);
-					}
-				},
-				id
-		);
-		if (res.isEmpty())
-			return Optional.empty();
-		return Optional.of(res.getFirst());
-	}*/
+    private final JdbcTemplate template;
+
+    public ProjectRepository(JdbcTemplate template) {
+        this.template = template;
+    }
+
+    @Override
+    public Optional<Project> getById(Long id) {
+        List<Project> res = template.query(
+                "SELECT * FROM Project WHERE id = ?",
+                new RowMapper<Project>() {
+                    @Override
+                    public Project mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        return new Project(
+                                rs.getLong("id"),
+                                rs.getString("name"),
+                                rs.getString("desc"),
+                                rs.getDate("begin").toLocalDate(),
+                                rs.getDate("end").toLocalDate()
+                        );
+                    }
+                },
+                id
+        );
+        if (res.isEmpty())
+            return Optional.empty();
+        return Optional.of(res.getFirst());
+    }
+
+    @Override
+    public boolean delete(Long id) {
+        return template.update("DELETE FROM Project WHERE id = ?", id) == 1;
+    }
 }
+
