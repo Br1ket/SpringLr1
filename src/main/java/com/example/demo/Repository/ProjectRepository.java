@@ -7,15 +7,13 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.IntFunction;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @Repository
-public class ProjectRepository implements ProjectRepositoryI {
+public class ProjectRepository  {
 
     private final JdbcTemplate template;
 
@@ -23,7 +21,7 @@ public class ProjectRepository implements ProjectRepositoryI {
         this.template = template;
     }
 
-    @Override
+
     public Optional<Project> getById(Long id) {
         List<Project> res = template.query(
                 "SELECT * FROM Project WHERE id = ?",
@@ -43,13 +41,13 @@ public class ProjectRepository implements ProjectRepositoryI {
         return Optional.of(res.getFirst());
     }
 
-    @Override
+
     public Optional<Project> create(String name, String description, LocalDate begin, LocalDate end) {
         Long id = template.queryForObject("SELECT nextval('project_ID')", Long.class);
 
         template.update("INSERT INTO Project VALUES (?,?,?,?,?)",
                 id,
-                name/*.substring(0,Math.min(name.length(),255))*/,
+                name,
                 description,
                 begin,
                 end
@@ -58,7 +56,8 @@ public class ProjectRepository implements ProjectRepositoryI {
         return Optional.of(new Project(id, name, description, begin, end));
     }
 
-    @Override
+
+
     public Set<Project> getAllProject() {
         return new HashSet<>(
                 template.query(
@@ -74,9 +73,10 @@ public class ProjectRepository implements ProjectRepositoryI {
         );
     }
 
-    @Override
+
     public int delete(Long id) {
         return template.update("DELETE FROM Project WHERE id = ?", id);
+
     }
 
     public boolean update(Project project){
@@ -88,7 +88,7 @@ public class ProjectRepository implements ProjectRepositoryI {
                 project.getId()
         ) == 1;
     }
-    @Override
+
     public Set<Project> getByRange(LocalDate begin, LocalDate end) {
         return new HashSet<>(
                 template.query(

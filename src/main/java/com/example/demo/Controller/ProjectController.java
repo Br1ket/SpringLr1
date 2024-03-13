@@ -21,11 +21,6 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @RequestMapping("/hello")
-    public void hi() {
-        System.out.println("biba");
-    }
-
     // Создание проекта
     @PostMapping
     ResponseEntity<Object> createProject(@RequestBody Project rb) {
@@ -60,7 +55,7 @@ public class ProjectController {
     @DeleteMapping("/{projectId}")
     ResponseEntity<Object> deleteProject(@PathVariable(required = true, name = "projectId") Long id) {
         if (projectService.delete(id) == 1) {
-            System.out.println("Delete project with id = " + id + "))");
+            System.out.println("Delete project with id = " + id + ";)");
         } else System.out.println("ERROR DELETE");
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -82,10 +77,27 @@ public class ProjectController {
 
     @PutMapping("/{projectId}")
     ResponseEntity<Object> updateProject(@PathVariable(required = true, name = "projectId") Long id, @RequestBody Project p) {
-        if (projectService.getById(id).isEmpty())
+
+        Optional<Project> optionalProject = projectService.getById(id);
+
+        if (optionalProject.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
+        Project pTemp = optionalProject.get();
         p.setId(id);
+        if (p.getName() == null) {
+            p.setName(pTemp.getName());
+        }
+        if (p.getDescription() == null) {
+            p.setDescription(pTemp.getDescription());
+        }
+        if (p.getBegin() == null) {
+            p.setBegin(pTemp.getBegin());
+        }
+        if (p.getEnd() == null) {
+            p.setEnd(pTemp.getEnd());
+        }
+
         if (projectService.update(p)) {
             System.out.println(p);
             return new ResponseEntity<>(p,HttpStatus.OK);

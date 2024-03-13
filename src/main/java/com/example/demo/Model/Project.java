@@ -26,8 +26,6 @@ public class Project {
 
     private LocalDate end;
 
-   /* @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Task> tasks;*/
 
 
 
