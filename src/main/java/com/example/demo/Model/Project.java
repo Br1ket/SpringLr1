@@ -3,6 +3,7 @@ package com.example.demo.Model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -11,19 +12,21 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@ToString
 @Table(name = "project",schema = "public")
 public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String desc;
+    private String description;
     private String name;
 
-    private Date begin;
+    private LocalDate begin;
 
-    private Date end;
+    private LocalDate end;
 
-    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Task> tasks;
+
+
+
 }
