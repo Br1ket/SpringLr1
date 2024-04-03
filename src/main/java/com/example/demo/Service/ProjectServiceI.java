@@ -1,23 +1,19 @@
 package com.example.demo.Service;
 
-import com.example.demo.Model.Project;
-import com.example.demo.Model.ProjectDto;
+import com.example.demo.pojo.ProjectPojo;
 
-import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface ProjectServiceI {
 
-    public Optional<ProjectDto> create(String name, String description, LocalDate begin, LocalDate end);
+    public Optional<ProjectPojo> create(ProjectPojo pojo);
 
+    public Optional<ProjectPojo> getById(Long id);
 
-    public Optional<ProjectDto> getById(Long id);
+    public Optional<ProjectPojo> update(ProjectPojo project, ProjectPojo pTemp);
 
-    public boolean update(ProjectDto project, ProjectDto pTemp);
+    public void delete(Long id);
 
-    public int delete(Long id);
-
-    public Set<ProjectDto> getByRange(LocalDate begin, LocalDate end);
-    public Set<ProjectDto> getAllProject();
+    public List<ProjectPojo> getAllProject();
 }
