@@ -1,17 +1,15 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Project;
-import com.example.demo.Model.ProjectDto;
 import com.example.demo.Service.ProjectService;
+import com.example.demo.pojo.ProjectPojo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Controller
 @RequestMapping("/projects")
@@ -22,17 +20,12 @@ public class ProjectController {
 
     // Создание проекта
     @PostMapping
-    ResponseEntity<Object> createProject(@RequestBody ProjectDto rb) {
+    ResponseEntity<Object> createProject(@RequestBody ProjectPojo project) {
 
-        if (!rb.getBegin().isBefore(rb.getEnd()))
+        if (!project.getBegin().isBefore(project.getEnd()))
             return new ResponseEntity<>("createProject", HttpStatus.BAD_REQUEST);
 
-        Optional<ProjectDto> optionalProject = this.projectService.create(
-                rb.getName(),
-                rb.getDescription(),
-                rb.getBegin(),
-                rb.getEnd()
-        );
+        Optional<ProjectPojo> optionalProject = projectService.create(project);
 
         if (optionalProject.isEmpty()) {
             return new ResponseEntity<>("createProject", HttpStatus.BAD_REQUEST);
@@ -42,7 +35,7 @@ public class ProjectController {
 
     @GetMapping("/{projectId}")
     ResponseEntity<Object> getProject(@PathVariable(required = true, name = "projectId") Long id) {
-        Optional<ProjectDto> optionalProject = projectService.getById(id);
+        Optional<ProjectPojo> optionalProject = projectService.getById(id);
 
         if (optionalProject.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -54,56 +47,55 @@ public class ProjectController {
 
     @DeleteMapping("/{projectId}")
     ResponseEntity<Object> deleteProject(@PathVariable(required = true, name = "projectId") Long id) {
-        if (projectService.delete(id) == 1) {
+        projectService.delete(id);
+
+        if (projectService.getById(id).isEmpty()) {
             System.out.println("Delete project with id = " + id + ";)");
         } else System.out.println("ERROR DELETE");
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Получение проектов
-    @GetMapping
-    ResponseEntity<Object> getProjectFiltered(@RequestParam(name = "start_date") LocalDate start_date, @RequestParam(name = "end_date") LocalDate end_date) {
-        Set<ProjectDto> setProjects = projectService.getByRange(start_date, end_date);
-        if (setProjects.isEmpty())
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
-        for (ProjectDto proj : setProjects) {
-            System.out.println(proj);
-        }
-
-        return new ResponseEntity<>(setProjects, HttpStatus.OK);
-    }
-
     @PutMapping("/{projectId}")
-    ResponseEntity<Object> updateProject(@PathVariable(required = true, name = "projectId") Long id, @RequestBody ProjectDto p) {
+    ResponseEntity<Object> updateProject(@PathVariable(required = true, name = "projectId") Long id, @RequestBody ProjectPojo p) {
 
-        Optional<ProjectDto> optionalProject = projectService.getById(id);
+        Optional<ProjectPojo> optionalProject = projectService.getById(id);
 
         if (optionalProject.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
 
-        if (projectService.update(p,optionalProject.get())) {
-            return new ResponseEntity<>(projectService.getById(id).get(),HttpStatus.OK);
+        Optional<ProjectPojo> pojo = projectService.update(p,optionalProject.get());
+        if(pojo.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        else return new ResponseEntity<>(projectService.getById(id).get(),HttpStatus.OK);
+
     }
 
     @GetMapping("/all")
     ResponseEntity<Object> getAllProjects() {
-        Set<ProjectDto> projectsSet = projectService.getAllProject();
+        List<ProjectPojo> projectsList = projectService.getAllProject();
 
-        if (projectsSet.isEmpty())
+        if (projectsList.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-        for (ProjectDto proj : projectsSet) {
+        for (ProjectPojo proj : projectsList) {
             System.out.println(proj);
         }
 
-        return new ResponseEntity<>(projectsSet, HttpStatus.OK);
+        return new ResponseEntity<>(projectsList, HttpStatus.OK);
     }
 
+    @GetMapping()
+    public ResponseEntity<?> getProjectByDescFilter(@RequestParam("search") String phrase) {
+        List<ProjectPojo> projects = projectService.getProjectByDescFilter(phrase);
+        return new ResponseEntity<>(projects, projects == null || projects.size() == 0 ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+    }
 
+    @GetMapping("/open")
+    public ResponseEntity<?> getNotFulfilledTask() {
+        return new ResponseEntity<>(projectService.getNotFulfilledTask(), HttpStatus.OK);
+    }
 }
 

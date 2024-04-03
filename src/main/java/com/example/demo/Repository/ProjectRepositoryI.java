@@ -1,21 +1,17 @@
 package com.example.demo.Repository;
 
-import com.example.demo.Model.Project;
+import com.example.demo.Entity.Project;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-public interface ProjectRepositoryI {
-    Optional<Project> getById(Long id);
+public interface ProjectRepositoryI extends JpaRepository<Project, Integer> {
+    public Optional<Project> findById(Integer projectId);
+    public List<Project> findByNameIsContainingIgnoreCaseOrDescriptionIsContainingIgnoreCase(String name, String description);
 
-    Optional<Project> create(String name, String description, LocalDate begin, LocalDate end);
-
-    Set<Project> getAllProject();
-
-    int delete(Long id);
-
-    boolean update(Project project);
-
-    Set<Project> getByRange(LocalDate begin, LocalDate end);
+    @Query(value = "select projects.project_id, (select count(task) from task where task.isfinished = False and projects.project_id = task.proj_id) from projects",
+            nativeQuery = true)
+    public List<Object[]> findProjectsAndTaskCount();
 }
